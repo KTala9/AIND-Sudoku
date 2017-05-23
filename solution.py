@@ -1,3 +1,5 @@
+import board
+
 assignments = []
 
 def assign_value(values, box, value):
@@ -26,9 +28,6 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
-
-def cross(A, B):
-    "Cross product of elements in A and elements in B."
     pass
 
 def grid_values(grid):
@@ -41,7 +40,8 @@ def grid_values(grid):
             Keys: The boxes, e.g., 'A1'
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
-    pass
+    assert len(grid) == 81, "Input grid must be a string of length 81 (9x9)"
+    return dict(zip(board.boxes, grid))
 
 def display(values):
     """
@@ -49,7 +49,12 @@ def display(values):
     Args:
         values(dict): The sudoku in dictionary form
     """
-    pass
+    width = 1 + max(len(values[s]) for s in board.boxes)
+    line = '+'.join(['-' * (width * 3)] * 3)
+    for r in board.rows:
+        print(''.join(values[r + c].center(width) + ('|' if c in '36' else '') for c in board.cols))
+        if r in 'CF': print(line)
+    return
 
 def eliminate(values):
     pass
