@@ -30,13 +30,17 @@ def naked_twins(values):
     # Eliminate the naked twins as possibilities for their peers
     
     # All undecided boxes with exactly two possible value open
-    candidate_twins = [box for box in board.boxes if len(values[box]) == 2]
+    candidate_twins = [
+        box 
+        for box in board.BOXES 
+        if len(values[box]) == 2
+    ]
 
     # If candidate_twin has a peer with identical value, these are naked_twins
-    naked_twins = [
+    naked_twins_ = [
         [box_1, box_2]
         for box_1 in candidate_twins
-        for box_2 in board.peers_of[box_1]
+        for box_2 in board.PEERS_OF[box_1]
         if values[box_2] == values[box_1]
     ]
 
@@ -44,9 +48,13 @@ def naked_twins(values):
     # 
     # This isn't quite right, we need to eliminate only within the correct unit,
     # not across all peers
-    for (twin_1, twin_2) in naked_twins:
+    for (twin_1, twin_2) in naked_twins_:
         # determine the unit to which these twins both belong
-        common_units = [unit for unit in board.units_of[twin_1] if twin_2 in unit]
+        common_units = [
+            unit 
+            for unit in board.UNITS_OF[twin_1] 
+            if twin_2 in unit
+        ]
         
         for unit in common_units:
             for box in unit:
@@ -68,7 +76,7 @@ def grid_values(grid):
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
     assert len(grid) == 81, "Input grid must be a string of length 81 (9x9)"
-    return dict(zip(board.boxes, grid))
+    return dict(zip(board.BOXES, grid))
 
 def display(values):
     """
@@ -76,12 +84,12 @@ def display(values):
     Args:
         values(dict): The sudoku in dictionary form
     """
-    width = 1 + max(len(values[s]) for s in board.boxes)
+    width = 1 + max(len(values[s]) for s in board.BOXES)
     line = '  | ' + '+'.join(['-' * (width * 3)] * 3)
-    print('    ' + ''.join(col.center(width) + ('|' if col in '36' else '') for col in board.cols))
+    print('    ' + ''.join(col.center(width) + ('|' if col in '36' else '') for col in board.COLS))
     print(line)
-    for row in board.rows:
-        print(row + ' | ' + ''.join(values[row + col].center(width) + ('|' if col in '36' else '') for col in board.cols))
+    for row in board.ROWS:
+        print(row + ' | ' + ''.join(values[row + col].center(width) + ('|' if col in '36' else '') for col in board.COLS))
         if row in 'CF':
             print(line)
     return
@@ -91,13 +99,13 @@ def eliminate(values):
     
     for box in solved_values:
         digit = values[box]
-        for peer in board.peers_of[box]:
+        for peer in board.PEERS_OF[box]:
             values[peer] = values[peer].replace(digit, '')
             
     return values
 
 def only_choice(values):
-    for unit in board.all_units:
+    for unit in board.ALL_UNITS:
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
@@ -134,10 +142,10 @@ def search(values):
     values = reduce_puzzle(values)
     if values is False:
         return False ## Failed earlier
-    if all(len(values[s]) == 1 for s in board.boxes): 
+    if all(len(values[s]) == 1 for s in board.BOXES): 
         return values ## Solved!
     # Choose one of the unfilled squares with the fewest possibilities
-    n, s = min((len(values[s]), s) for s in board.boxes if len(values[s]) > 1)
+    n, s = min((len(values[s]), s) for s in board.BOXES if len(values[s]) > 1)
     # Now use recurrence to solve each one of the resulting sudokus
     for value in values[s]:
         new_sudoku = values.copy()
