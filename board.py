@@ -24,13 +24,14 @@ row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 diagonal_units = [[''.join(x) for x in list(zip(rows, cols))], [''.join(x) for x in list(zip(rows[::-1], cols))]]
-unitlist = row_units + column_units + square_units + diagonal_units
+all_units = row_units + column_units + square_units
+all_units_including_diagonals = row_units + column_units + square_units + diagonal_units
 
 # This dict maps from boxes -> lists of all the units to which a box belongs.
-units_of_box = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+units_of = dict((s, [u for u in all_units if s in u]) for s in boxes)
 
 # The 'peers' of a given box are all the other boxes in the given box's units.
 # If a box has a known value, none of its peers may take the same value.
 
 # This dict maps from boxes -> peers of that box.
-peers_of_box = dict((s, set(sum(units_of_box[s],[]))-set([s])) for s in boxes)
+peers_of = dict((s, set(sum(units_of[s],[]))-set([s])) for s in boxes)

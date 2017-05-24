@@ -28,7 +28,34 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
-    pass
+    
+    # All undecided boxes with exactly two possible value open
+    candidate_twins = [box for box in board.boxes if len(values[box]) == 2]
+
+    # If candidate_twin has a peer with identical value, these are naked_twins
+    naked_twins = [
+        [box_1, box_2]
+        for box_1 in candidate_twins
+        for box_2 in board.peers_of[box_1]
+        if values[box_2] == values[box_1]
+    ]
+
+    # Eliminate values from the naked twins' peers
+    # 
+    # This isn't quite right, we need to eliminate only within the correct unit,
+    # not across all peers
+    for (twin_1, twin_2) in naked_twins:
+        # determine the unit to which these twins both belong
+        common_units = [unit for unit in board.units_of[twin_1] if twin_2 in unit]
+        
+        for unit in common_units:
+            for box in unit:
+                for digit in values[twin_1]:
+                    if box != twin_1 and box != twin_2:
+                        values[box] = values[box].replace(digit, '')
+
+    return values
+
 
 def grid_values(grid):
     """
@@ -50,23 +77,74 @@ def display(values):
         values(dict): The sudoku in dictionary form
     """
     width = 1 + max(len(values[s]) for s in board.boxes)
-    line = '+'.join(['-' * (width * 3)] * 3)
-    for r in board.rows:
-        print(''.join(values[r + c].center(width) + ('|' if c in '36' else '') for c in board.cols))
-        if r in 'CF': print(line)
+    line = '  | ' + '+'.join(['-' * (width * 3)] * 3)
+    print('    ' + ''.join(col.center(width) + ('|' if col in '36' else '') for col in board.cols))
+    print(line)
+    for row in board.rows:
+        print(row + ' | ' + ''.join(values[row + col].center(width) + ('|' if col in '36' else '') for col in board.cols))
+        if row in 'CF':
+            print(line)
     return
 
 def eliminate(values):
-    pass
+    solved_values = [box for box in values.keys() if len(values[box]) == 1]
+    
+    for box in solved_values:
+        digit = values[box]
+        for peer in board.peers_of[box]:
+            values[peer] = values[peer].replace(digit, '')
+            
+    return values
 
 def only_choice(values):
-    pass
+    for unit in board.all_units:
+        for digit in '123456789':
+            dplaces = [box for box in unit if digit in values[box]]
+            if len(dplaces) == 1:
+                values[dplaces[0]] = digit
+            
+    return values
 
 def reduce_puzzle(values):
-    pass
+    stalled = False
+    while not stalled:
+        # Check how many boxes have a determined value
+        solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
+
+        # Your code here: Use the Eliminate Strategy
+        values = eliminate(values)
+
+        # Your code here: Use the Only Choice Strategy
+        values = only_choice(values)
+
+
+        # Your code here: Use the Naked Twins Strategy
+        values = naked_twins(values)
+
+        # Check how many boxes have a determined value, to compare
+        solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
+        # If no new values were added, stop the loop.
+        stalled = solved_values_before == solved_values_after
+        # Sanity check, return False if there is a box with zero available values:
+        if len([box for box in values.keys() if len(values[box]) == 0]):
+            return False
+    return values
 
 def search(values):
-    pass
+    values = reduce_puzzle(values)
+    if values is False:
+        return False ## Failed earlier
+    if all(len(values[s]) == 1 for s in board.boxes): 
+        return values ## Solved!
+    # Choose one of the unfilled squares with the fewest possibilities
+    n, s = min((len(values[s]), s) for s in board.boxes if len(values[s]) > 1)
+    # Now use recurrence to solve each one of the resulting sudokus
+    for value in values[s]:
+        new_sudoku = values.copy()
+        new_sudoku[s] = value
+        attempt = search(new_sudoku)
+        if attempt:
+            return attempt
 
 def solve(grid):
     """
