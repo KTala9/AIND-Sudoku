@@ -1,6 +1,11 @@
 import board
+from utils import get_strategies
 
+# A history of the 'moves' made in solving the sudoku.
+# By 'move' we mean an assignment of a definite value to a box.
 assignments = []
+
+KNOWN_STRATEGIES = get_strategies()
 
 def assign_value(values, box, value):
     """
@@ -13,58 +18,11 @@ def assign_value(values, box, value):
         return values
 
     values[box] = value
+
     if len(value) == 1:
         assignments.append(values.copy())
-    return values
-
-def naked_twins(values):
-    """Eliminate values using the naked twins strategy.
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-
-    Returns:
-        the values dictionary with the naked twins eliminated from peers.
-    """
-
-    # Find all instances of naked twins
-    # Eliminate the naked twins as possibilities for their peers
-    
-    # All undecided boxes with exactly two possible value open
-    candidate_twins = [
-        box 
-        for box in board.BOXES 
-        if len(values[box]) == 2
-    ]
-
-    # If candidate_twin has a peer with identical value, these are naked_twins
-    naked_twins_ = [
-        [box_1, box_2]
-        for box_1 in candidate_twins
-        for box_2 in board.PEERS_OF[box_1]
-        if values[box_2] == values[box_1]
-    ]
-
-    # Eliminate values from the naked twins' peers
-    # 
-    # This isn't quite right, we need to eliminate only within the correct unit,
-    # not across all peers
-    for (twin_1, twin_2) in naked_twins_:
-        # determine the unit to which these twins both belong
-        common_units = [
-            unit 
-            for unit in board.UNITS_OF[twin_1] 
-            if twin_2 in unit
-        ]
-        
-        for unit in common_units:
-            for box in unit:
-                for digit in values[twin_1]:
-                    if box != twin_1 and box != twin_2:
-                        newValue = values[box].replace(digit, '')
-                        assign_value(values, box, newValue)
 
     return values
-
 
 def grid_values(grid):
     """
@@ -77,7 +35,9 @@ def grid_values(grid):
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
     assert len(grid) == 81, "Input grid must be a string of length 81 (9x9)"
+
     grid_list = [x if x != '.' else '123456789' for x in grid]
+
     return dict(zip(board.BOXES, grid_list))
 
 def display(values):
@@ -96,40 +56,15 @@ def display(values):
             print(line)
     return
 
-def eliminate(values):
-    solved_values = [box for box in values.keys() if len(values[box]) == 1]
-    
-    for box in solved_values:
-        digit = values[box]
-        for peer in board.PEERS_OF[box]:
-            new_value = values[peer].replace(digit, '')
-            assign_value(values, peer, new_value)
-            
-    return values
-
-def only_choice(values):
-    for unit in board.ALL_UNITS:
-        for digit in '123456789':
-            dplaces = [box for box in unit if digit in values[box]]
-            if len(dplaces) == 1:
-                assign_value(values, dplaces[0], digit)
-            
-    return values
-
 def reduce_puzzle(values):
     stalled = False
     while not stalled:
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
-        # Your code here: Use the Eliminate Strategy
-        values = eliminate(values)
-
-        # Your code here: Use the Only Choice Strategy
-        values = only_choice(values)
-
-        # Your code here: Use the Naked Twins Strategy
-        values = naked_twins(values)
+        # Apply every strategy the game knows
+        for strategy in KNOWN_STRATEGIES:
+            strategy(values, assign_value)
 
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
