@@ -60,7 +60,8 @@ def naked_twins(values):
             for box in unit:
                 for digit in values[twin_1]:
                     if box != twin_1 and box != twin_2:
-                        values[box] = values[box].replace(digit, '')
+                        newValue = values[box].replace(digit, '')
+                        assign_value(values, box, newValue)
 
     return values
 
@@ -76,7 +77,8 @@ def grid_values(grid):
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
     assert len(grid) == 81, "Input grid must be a string of length 81 (9x9)"
-    return dict(zip(board.BOXES, grid))
+    grid_list = [x if x != '.' else '123456789' for x in grid]
+    return dict(zip(board.BOXES, grid_list))
 
 def display(values):
     """
@@ -100,7 +102,8 @@ def eliminate(values):
     for box in solved_values:
         digit = values[box]
         for peer in board.PEERS_OF[box]:
-            values[peer] = values[peer].replace(digit, '')
+            new_value = values[peer].replace(digit, '')
+            assign_value(values, peer, new_value)
             
     return values
 
@@ -109,7 +112,7 @@ def only_choice(values):
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
-                values[dplaces[0]] = digit
+                assign_value(values, dplaces[0], digit)
             
     return values
 
@@ -124,7 +127,6 @@ def reduce_puzzle(values):
 
         # Your code here: Use the Only Choice Strategy
         values = only_choice(values)
-
 
         # Your code here: Use the Naked Twins Strategy
         values = naked_twins(values)
@@ -163,6 +165,10 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    values = grid_values(grid)
+    solved_game = search(values)
+
+    return solved_game
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'

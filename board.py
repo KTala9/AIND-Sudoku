@@ -37,10 +37,7 @@ DIAGONAL_UNITS = [
     [''.join(x) for x in list(zip(ROWS[::-1], COLS))]
 ]
 
-ALL_UNITS = ROW_UNITS + COLUMN_UNITS + SQUARE_UNITS
-
-ALL_UNITS_INC_DIAG = ROW_UNITS \
-    + COLUMN_UNITS + SQUARE_UNITS + DIAGONAL_UNITS
+ALL_UNITS = ROW_UNITS + COLUMN_UNITS + SQUARE_UNITS + DIAGONAL_UNITS
 
 # This dict maps from boxes -> lists of all the units to which a box belongs.
 UNITS_OF = dict((s, [u for u in ALL_UNITS if s in u]) for s in BOXES)
