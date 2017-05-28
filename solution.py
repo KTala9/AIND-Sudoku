@@ -230,10 +230,15 @@ def naked_twins(values, history=[]):
     # If a candidate_twin has a peer with identical value, these are naked_twins
     # Trailing underscore is to avoid shadowing the method name.
     naked_twins_ = [
-        [box_1, box_2]
+        (box_1, box_2)
+        # They must have exactly two possible values
         for box_1 in candidate_twins
+        # They must be peers
         for box_2 in PEERS_OF[box_1]
+        # They must have the same two options
         if values[box_2] == values[box_1]
+        # Don't double count
+        if box_1 > box_2
     ]
 
     for (twin_1, twin_2) in naked_twins_:
