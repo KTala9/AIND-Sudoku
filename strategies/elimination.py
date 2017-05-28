@@ -1,12 +1,13 @@
-from board import PEERS_OF
+from board import PEERS_OF, update_values
 
-def elimination(values, set_board_value):
+def elimination(history, values):
     """
     Eliminate values using the Elimination strategy.
-    WARNING: This method mutates `values`
 
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
+		set_board_value(function): a method for performing board mutations
+			It should take params (values_dict, target_box, new_value)
 
     Returns:
         The values dictionary with the naked twins eliminated from peers.
@@ -17,6 +18,6 @@ def elimination(values, set_board_value):
         digit = values[box]
         for peer in PEERS_OF[box]:
             new_value = values[peer].replace(digit, '')
-            set_board_value(values, peer, new_value)
-            
+            values = update_values(history, values, peer, new_value)
+
     return values

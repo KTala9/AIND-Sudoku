@@ -8,6 +8,34 @@ def cross(a, b):
     """
     return [s+t for s in a for t in b]
 
+def update_values(history, values, box, value):
+    """
+    Given a board state `values` and a move `box`, `values`, returns a new board
+    state after that move has been made. Also saves this new board state to the
+    `history` list.
+
+    Args:
+        history(list): A list of dicts, representing the game state for sequential moves
+        values(dict): The dict storing the game state
+        box(string): The key of the box to update e.g. 'A2'
+        value(string): The new value for the given box e.g. '1' or '124789'
+    Returns:
+        A copy of the game state after the update is performed.
+
+    """
+
+    # Don't waste memory appending actions that don't actually change any values
+    if values[box] == value:
+        return values
+
+    new_values = values.copy()
+    new_values[box] = value
+
+    if len(value) == 1:
+        history.append(new_values)
+
+    return new_values
+
 # Rows are labeled with capital letters
 ROWS = 'ABCDEFGHI'
 

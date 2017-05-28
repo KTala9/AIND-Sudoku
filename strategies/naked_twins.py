@@ -1,12 +1,13 @@
-from board import BOXES, PEERS_OF, UNITS_OF
+from board import BOXES, PEERS_OF, UNITS_OF, update_values
 
-def naked_twins(values, set_board_value):
+def naked_twins(history, values):
     """
     Eliminate values using the Naked Twins strategy.
-    WARNING: This method mutates `values`
 
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
+        set_board_value(function): a method for performing board mutations
+            It should take params (values_dict, target_box, new_value)
 
     Returns:
         The values dictionary with the naked twins eliminated from peers.
@@ -41,7 +42,7 @@ def naked_twins(values, set_board_value):
             for box in unit:
                 for digit in values[twin_1]:
                     if box != twin_1 and box != twin_2:
-                        newValue = values[box].replace(digit, '')
-                        set_board_value(values, box, newValue)
+                        new_value = values[box].replace(digit, '')
+                        values = update_values(history, values, box, new_value)
 
     return values
