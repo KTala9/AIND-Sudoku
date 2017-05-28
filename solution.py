@@ -260,7 +260,7 @@ def naked_twins(values, history=[]):
     return values
 
 """
-A list of all the constraint propagation strategies that though be used while
+A list of all the constraint propagation strategies that should be used while
 searching for a solution.
 """
 KNOWN_STRATEGIES = [
@@ -360,7 +360,7 @@ def solve(grid):
     if solved_game:
         return solved_game
     else:
-        return false
+        return False
 
 if __name__ == '__main__':
     diag_sudoku_grid = '9.1....8.8.5.7..4.2.4....6...7......5..............83.3..6......9................'
