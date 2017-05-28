@@ -78,7 +78,7 @@ def display(values):
             print(line)
     return
 
-def get_num_solved_boxes(values, num_options=0):
+def get_num_boxes_with_n_options(values, num_options):
     return len([
         box 
         for box in values.keys() 
@@ -143,13 +143,42 @@ def elimination(values, history=[]):
         The values dictionary with inconsistent possibilities eliminated
         form all units.
     """
-    solved_values = [box for box in values.keys() if len(values[box]) == 1]
+    solved_values = [
+        box 
+        for box in values.keys() 
+        if len(values[box]) == 1
+    ]
     
     for box in solved_values:
         digit = values[box]
         for peer in PEERS_OF[box]:
             new_value = values[peer].replace(digit, '')
             values = update_values(history, values, peer, new_value)
+
+    return values
+
+def only_choice(values, history=[]):
+    """
+    Eliminate values using the Only Choice strategy.
+
+    Args:
+        values(dict): a dictionary of the form {'box_name': '123456789', ...}
+        history(list): A list of previous game states (previous `values`)
+
+    Returns:
+        The values dictionary with any only-choice candidates set as decided box values.
+    """
+    for unit in ALL_UNITS:
+        for digit in '123456789':
+
+            dplaces = [
+                box 
+                for box in unit 
+                if digit in values[box]
+            ]
+
+            if len(dplaces) == 1:
+                values = update_values(history, values, dplaces[0], digit)
 
     return values
 
@@ -199,31 +228,6 @@ def naked_twins(values, history=[]):
 
     return values
 
-def only_choice(values, history=[]):
-    """
-    Eliminate values using the Only Choice strategy.
-
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-        history(list): A list of previous game states (previous `values`)
-
-    Returns:
-        The values dictionary with any only-choice candidates set as decided box values.
-    """
-    for unit in ALL_UNITS:
-        for digit in '123456789':
-
-            dplaces = [
-                box 
-                for box in unit 
-                if digit in values[box]
-            ]
-
-            if len(dplaces) == 1:
-                values = update_values(history, values, dplaces[0], digit)
-
-    return values
-
 """
 A list of all the constraint propagation strategies that though be used while
 searching for a solution.
@@ -255,20 +259,20 @@ def reduce_puzzle(values):
 
     while not has_stalled:
         # Check how many boxes have a determined value
-        solved_values_before = get_num_solved_boxes(values)
+        solved_values_before = get_num_boxes_with_n_options(values, 1)
 
         # Apply every strategy the game knows
         for strategy in KNOWN_STRATEGIES:
             values = strategy(values, assignments)
 
         # Check how many boxes have a determined value, to compare
-        solved_values_after = get_num_solved_boxes(values)
+        solved_values_after = get_num_boxes_with_n_options(values, 1)
 
         # If no new values were added, stop the loop.
         has_stalled = solved_values_before == solved_values_after
 
         # Sanity check, return False if there is a box with zero available values:
-        num_unsolvable_boxes = get_num_solved_boxes(values, 0)
+        num_unsolvable_boxes = get_num_boxes_with_n_options(values, 0)
         if num_unsolvable_boxes:
             return False
 
@@ -325,7 +329,7 @@ def solve(grid):
     return solved_game
 
 if __name__ == '__main__':
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    diag_sudoku_grid = '9.1....8.8.5.7..4.2.4....6...7......5..............83.3..6......9................'
     display(solve(diag_sudoku_grid))
 
     try:
