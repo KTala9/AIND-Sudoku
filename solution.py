@@ -13,7 +13,11 @@ def cross(a, b):
     """
     Cross product of elements in a and elements in b.
     """
-    return [s+t for s in a for t in b]
+    return [
+        s + t 
+        for s in a 
+        for t in b
+    ]
 
 def update_values(history, values, box, value):
     """
@@ -28,7 +32,6 @@ def update_values(history, values, box, value):
         value(string): The new value for the given box e.g. '1' or '124789'
     Returns:
         A copy of the game state after the update is performed.
-
     """
 
     # Don't waste memory appending actions that don't actually change any values
@@ -57,7 +60,10 @@ def convert_grid_string_to_dict(grid):
     """
     assert len(grid) == 81, "Input grid must be a string of length 81 (9x9)"
 
-    grid_list = [x if x != '.' else '123456789' for x in grid]
+    grid_list = [
+        x if x != '.' else '123456789' 
+        for x in grid
+    ]
 
     return dict(zip(BOXES, grid_list))
 
@@ -78,11 +84,31 @@ def display(values):
             print(line)
     return
 
-def get_num_boxes_with_n_options(values, num_options):
+def get_num_solved_boxes(values):
+    """
+    How many boxes are solved, in the sense that they have precisely one
+    possible value?
+
+    Returns:
+        The number of solved boxes
+    """
     return len([
         box 
         for box in values.keys() 
-        if len(values[box]) == num_options
+        if len(values[box]) == 1
+    ])
+
+def get_num_failed_boxes(values):
+    """
+    How many boxes have no possible values left?
+
+    Returns:
+        The number of failed/invalid/inconsistent boxes
+    """
+    return len([
+        box 
+        for box in values.keys() 
+        if len(values[box]) == 0
     ])
 
 
@@ -259,21 +285,21 @@ def reduce_puzzle(values):
 
     while not has_stalled:
         # Check how many boxes have a determined value
-        solved_values_before = get_num_boxes_with_n_options(values, 1)
+        solved_values_before = get_num_solved_boxes(values)
 
         # Apply every strategy the game knows
         for strategy in KNOWN_STRATEGIES:
             values = strategy(values, assignments)
 
         # Check how many boxes have a determined value, to compare
-        solved_values_after = get_num_boxes_with_n_options(values, 1)
+        solved_values_after = get_num_solved_boxes(values)
 
         # If no new values were added, stop the loop.
         has_stalled = solved_values_before == solved_values_after
 
         # Sanity check, return False if there is a box with zero available values:
-        num_unsolvable_boxes = get_num_boxes_with_n_options(values, 0)
-        if num_unsolvable_boxes:
+        num_failed_boxes = get_num_failed_boxes(values)
+        if num_failed_boxes:
             return False
 
     return values
@@ -326,7 +352,10 @@ def solve(grid):
     values = convert_grid_string_to_dict(grid)
     solved_game = search(values)
 
-    return solved_game
+    if solved_game:
+        return solved_game
+    else:
+        return false
 
 if __name__ == '__main__':
     diag_sudoku_grid = '9.1....8.8.5.7..4.2.4....6...7......5..............83.3..6......9................'
